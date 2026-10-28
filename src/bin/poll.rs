@@ -7,10 +7,7 @@ use laundry_maxxing::laundry::LaundryState;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "Welcone to laundry maxxer".yellow());
-    println!("{}: machine is free to use", "O".green());
-    println!("{}: machine is in use (not available)", "X".red());
-    println!("?: an error happened (check internet connection/turn off VPN)");
+    println!("{}", "Welcone to laundry maxxer polling thing".yellow());
     let client = reqwest::Client::builder().no_proxy().build()?;
     let mut current_laundry_states = LaundryState::all();
     let mut last_laundry_states = LaundryState::all();
