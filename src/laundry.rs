@@ -1,8 +1,7 @@
 use reqwest::{Client, multipart};
-use strum_macros::EnumIter;
 
 // Washer 1 is closest to the door, then 2, 3 and so on
-#[derive(Debug, Clone, Copy, EnumIter, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LaundryMachine {
     Washer1,
     Washer2,
@@ -43,5 +42,16 @@ impl LaundryMachine {
             .text()
             .await?
             .contains("设备工作中，请更换设备使用"))
+    }
+
+    pub fn all() -> &'static [LaundryMachine; 6] {
+        &[
+            LaundryMachine::Washer1,
+            LaundryMachine::Washer2,
+            LaundryMachine::Washer3,
+            LaundryMachine::Washer4,
+            LaundryMachine::Washer5,
+            LaundryMachine::Dryer
+        ]
     }
 }

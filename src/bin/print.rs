@@ -3,7 +3,6 @@ use std::time::Duration;
 use colored_text::{self, Colorize};
 use laundry_maxxing::laundry::LaundryMachine;
 use chrono::Local;
-use strum::IntoEnumIterator;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -16,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let local_time = Local::now().format("%T");
         print!("[{}] ", local_time.blue());
         print!("{} ", "(Washers)".yellow());
-        for machine in LaundryMachine::iter() {
+        for &machine in LaundryMachine::all().iter() {
             // Add space before dryer
             if machine == LaundryMachine::Dryer {
                 print!("{}", "  (Dryer) ".yellow());
