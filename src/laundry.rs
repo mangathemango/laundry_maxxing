@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use reqwest::{Client, multipart};
 
 // Washer 1 is closest to the door, then 2, 3 and so on
@@ -58,3 +60,46 @@ impl LaundryMachine {
         ]
     }
 }
+
+#[derive(Debug, Clone, Copy)]
+pub struct LaundryState {
+    pub machine: LaundryMachine,
+    pub last_available: Option<Instant>,
+    pub last_poll: Option<Instant>,   
+    pub is_available: bool 
+}
+
+impl LaundryState {
+    pub fn new(machine: LaundryMachine) -> Self {
+        Self {
+            machine,
+            last_available: None,
+            last_poll: None,
+            is_available: true
+        }
+    }
+
+    pub fn all() -> Vec<Self> {
+        LaundryMachine::all()
+            .map(Self::new)
+            .into_iter()
+            .collect()
+    }
+
+    pub async fn try_poll(&mut self, client: &Client) -> Result<(), Box<dyn std::error::Error>> {
+        match self.machine.check_availability(client).await? {
+            true => {
+                self.last_available = Some(Instant::now());
+                self.is_available = true;
+            }
+            false => {
+                self.is_available = false;
+            }
+        }
+        self.last_poll = Some(Instant::now());
+
+        Ok(())
+    } 
+}
+
+
