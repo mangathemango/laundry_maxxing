@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         for i in 0..6 {
             if current_laundry_states[i].is_available && !last_laundry_states[i].is_available {
-                let unavailable_duration = current_laundry_states[i].last_available.unwrap().elapsed();
+                let unavailable_duration = last_laundry_states[i].last_available.unwrap().elapsed();
                 let mins = unavailable_duration.as_secs() / 60;
                 let secs = unavailable_duration.as_secs() % 60;
                 println!("{:?} was used for {}m {}s", current_laundry_states[i].machine, mins, secs);
