@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 print!("{}", "  (Dryer) ".yellow());
             }
 
-            match machine.is_free(&client).await {
+            match machine.check_availability(&client).await {
                 Ok(is_free) => {
                     if is_free { 
                         print!("{}", "O".green()) 

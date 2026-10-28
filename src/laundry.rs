@@ -23,7 +23,10 @@ impl LaundryMachine {
         }
     }
 
-    pub async fn is_free(&self, client: &Client) -> Result<bool, Box<dyn std::error::Error>> {
+    pub async fn check_availability(
+        &self,
+        client: &Client,
+    ) -> Result<bool, Box<dyn std::error::Error>> {
         let form = multipart::Form::new().text("goodsId", self.goods_id());
 
         let response = client
@@ -51,7 +54,7 @@ impl LaundryMachine {
             LaundryMachine::Washer3,
             LaundryMachine::Washer4,
             LaundryMachine::Washer5,
-            LaundryMachine::Dryer
+            LaundryMachine::Dryer,
         ]
     }
 }

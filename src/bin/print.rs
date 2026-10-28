@@ -1,8 +1,8 @@
 use std::time::Duration;
 
+use chrono::Local;
 use colored_text::{self, Colorize};
 use laundry_maxxing::laundry::LaundryMachine;
-use chrono::Local;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,14 +21,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 print!("{}", "  (Dryer) ".yellow());
             }
 
-            match machine.is_free(&client).await {
+            match machine.check_availability(&client).await {
                 Ok(is_free) => {
-                    if is_free { 
-                        print!("{}", "O".green()) 
-                    } else { 
+                    if is_free {
+                        print!("{}", "O".green())
+                    } else {
                         print!("{}", "X".red())
                     }
-                },
+                }
                 Err(_) => print!("?"),
             }
         }
