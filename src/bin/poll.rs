@@ -13,7 +13,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut last_laundry_states = LaundryState::all();
     loop {
         for state in current_laundry_states.iter_mut() {
-            state.try_poll(&client).await?;
+            if state.try_poll(&client).await.is_err() {
+                continue;
+            }
         }
 
         for i in 0..6 {
