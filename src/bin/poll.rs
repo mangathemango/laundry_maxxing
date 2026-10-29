@@ -19,7 +19,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         for i in 0..6 {
+            if !current_laundry_states[i].is_available && last_laundry_states[i].is_available {
+                if last_laundry_states[i].last_available.is_none() {
+                    println!("{:?} is detected as being used, but last available time wasnt detected. Skipping usage time calculation this one...", current_laundry_states[i].machine);
+                    continue;
+                }
+                println!("{:?} Just started being used, tracking...", current_laundry_states[i].machine);
+            }
             if current_laundry_states[i].is_available && !last_laundry_states[i].is_available {
+                println!("{:?} is now available", current_laundry_states[i].machine);
+                if last_laundry_states[i].last_available.is_none() {
+                    continue;
+                }
                 let unavailable_duration = last_laundry_states[i].last_available.unwrap().elapsed();
                 let mins = unavailable_duration.as_secs() / 60;
                 let secs = unavailable_duration.as_secs() % 60;
