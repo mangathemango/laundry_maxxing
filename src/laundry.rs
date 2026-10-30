@@ -1,9 +1,10 @@
-use std::time::Instant;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use reqwest::{Client, multipart};
+use serde::{Deserialize, Serialize};
 
 // Washer 1 is closest to the door, then 2, 3 and so on
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum LaundryMachine {
     Washer1,
     Washer2,
@@ -22,6 +23,29 @@ impl LaundryMachine {
             LaundryMachine::Washer4 => "1100860895",
             LaundryMachine::Washer5 => "1101161255",
             LaundryMachine::Dryer => "1101161256",
+        }
+    }
+
+    pub async fn poll(&self, client: &Client) -> LaundryPollEvent {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        match self.check_availability(client).await {
+            Ok(available) => LaundryPollEvent {
+                machine: *self,
+                available,
+                success: true,
+                error: None,
+                request_time: timestamp,
+            },
+            Err(e) => LaundryPollEvent {
+                machine: *self,
+                available: false,
+                success: false,
+                error: Some(e.to_string()),
+                request_time: timestamp,
+            },
         }
     }
 
@@ -59,47 +83,37 @@ impl LaundryMachine {
             LaundryMachine::Dryer,
         ]
     }
-}
 
-#[derive(Debug, Clone, Copy)]
-pub struct LaundryState {
-    pub machine: LaundryMachine,
-    pub last_available: Option<Instant>,
-    pub last_poll: Option<Instant>,   
-    pub is_available: bool 
-}
-
-impl LaundryState {
-    pub fn new(machine: LaundryMachine) -> Self {
-        Self {
-            machine,
-            last_available: None,
-            last_poll: None,
-            is_available: true
-        }
+    pub fn id(&self) -> i32 {
+        *self as i32
     }
 
-    pub fn all() -> Vec<Self> {
-        LaundryMachine::all()
-            .map(Self::new)
-            .into_iter()
-            .collect()
-    }
-
-    pub async fn try_poll(&mut self, client: &Client) -> Result<(), Box<dyn std::error::Error>> {
-        match self.machine.check_availability(client).await? {
-            true => {
-                self.last_available = Some(Instant::now());
-                self.is_available = true;
-            }
-            false => {
-                self.is_available = false;
-            }
+    pub fn from_id(id: i32) -> Self {
+        match id {
+            0 => Self::Washer1,
+            1 => Self::Washer2,
+            2 => Self::Washer3,
+            3 => Self::Washer4,
+            4 => Self::Washer5,
+            5 => Self::Dryer,
+            _ => panic!("yo invalid id: {}", id),
         }
-        self.last_poll = Some(Instant::now());
-
-        Ok(())
-    } 
+    }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LaundryPollEvent {
+    machine: LaundryMachine,
+    available: bool,
+    success: bool,
+    error: Option<String>,
+    request_time: u64,
+}
 
+pub trait LaundryStore {
+    fn save_poll_event(&self, poll_event: LaundryPollEvent) -> Result<(), StorageError>;
+
+    fn load_poll_events(&self) -> Result<Vec<LaundryPollEvent>, StorageError>;
+}
+
+pub type StorageError = Box<dyn std::error::Error + Send + Sync>;
