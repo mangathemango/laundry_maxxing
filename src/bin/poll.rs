@@ -19,6 +19,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("{e}")
             };
         }
-        tokio::time::sleep(Duration::from_secs(5)).await;
+        tokio::time::sleep(Duration::from_secs(10)).await;
     }
 }
